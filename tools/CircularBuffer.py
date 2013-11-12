@@ -18,6 +18,7 @@ class CircularBuffer:
     self.data = [None for i in xrange(bufferSize)]  # The buffer
     self.head = 0                                   # Head buffer pointer
     self.tail = 0                                   # Tail buffer pointer
+    self.overflow = False                           # Flag if overflow occured
 
 
 
@@ -30,7 +31,8 @@ class CircularBuffer:
         return
     
     if self.tail == self.head and self.data[self.head] != None:
-        self.head = (self.head + 1) % self.maxSize  # Overwrite!
+        self.head = (self.head + 1) % self.maxSize  # Overflow (Overwrite)!
+        self.overflow = True
         
     self.data[self.tail] = elem                     # Add element at tail pos.
     self.tail = (self.tail + 1) % self.maxSize      # Tail pointer to next pos.
@@ -44,11 +46,12 @@ class CircularBuffer:
     if self.maxSize == 0:                           # Check if in init state
         return
     
-    if self.tail == self.head and self.data[self.head] == None:
-        return                                      # Initial case
-    elif self.tail == self.head and self.data[self.head] != None:
-        self.data[self.head] = None                 # Completely empty
-        return
+    if self.tail == self.head:
+        if self.data[self.head] == None:
+            return                                  # Initial case
+        elif self.data[self.head] != None and self.overflow == True:
+            self.data[self.head] = None             # Overflow buffer
+            self.overflow = False
     
     self.head = (self.head + 1) % self.maxSize      # Remove by shifting head
 
